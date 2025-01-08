@@ -1,0 +1,9 @@
+dist
+node_modules
+.history
+*.bak
+.out
+.err
+bak
+.vercel
+.env
