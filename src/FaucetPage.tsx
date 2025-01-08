@@ -31,7 +31,19 @@ export const FaucetPage = () => {
     let [total_balance ,set_total_balance] = useState<number>(0);
 
     let [faucet_enable , set_faucet_enable ] = useState(false)
+    let update_total =  ()=>{
+      test_client.getBalance({owner:FAUCET}).then((balance) => {
+      console.log('Balance:', balance);
+      set_total_balance(Number(balance.totalBalance)/1e9);
+    });
+  }
 
+  let update_recipient_test =  ()=>{
+      test_client.getBalance({owner:recipient}).then((balance) => {
+      console.log('Balance:', balance);
+      set_testnet_balance(Number(balance.totalBalance)/1e9);
+    });
+  }
     const redirect_faucet = ( e )=>{
       const url = `https://faucet-rpc.vercel.app/v1/gas?recipient=${recipient}`
       window.location.href=url;
@@ -74,10 +86,9 @@ export const FaucetPage = () => {
           str += result.succ ? '':result.msg
           setMsg(str)
           if(result.succ){
-            test_client.getBalance({owner:recipient}).then((balance) => {
-                console.log('test Balance:', balance);
-                set_testnet_balance(Number(balance.totalBalance)/1e9);
-            }); 
+            update_recipient_test();
+            update_total();
+
           }
         } catch (error) {
             console.log(`Error: ${error}`);
@@ -104,14 +115,10 @@ export const FaucetPage = () => {
           set_faucet_enable(enable);
     },[mainnet_balance,total_balance])
 
+ 
     useEffect(() => {
-    
-        test_client.getBalance({owner:FAUCET}).then((balance) => {
-          console.log('Balance:', balance);
-          set_total_balance(Number(balance.totalBalance)/1e9);
-        });
-
-      }, []);
+      update_total();
+    }, []);
 
       useEffect(()=>{
         if(isAddrValid(recipient)){ 
@@ -119,10 +126,7 @@ export const FaucetPage = () => {
                 console.log('main Balance:', balance);
                 set_mainnet_balance(Number(balance.totalBalance)/1e9);
             });    
-            test_client.getBalance({owner:recipient}).then((balance) => {
-              console.log('test Balance:', balance);
-              set_testnet_balance(Number(balance.totalBalance)/1e9);
-          }); 
+            update_recipient_test();
         }
         else if(mainnet_balance != 0){
             set_mainnet_balance(0);
