@@ -6,7 +6,8 @@
   "scripts": {
     "clean": "rm -rf dist",
     "upload": "pnpm build && vercel --prod",
-    "dev:client": "vite",
+    "dev:client": "vite ",
+    "devp":"vite --port 8000",
     "dev:server": "cd server && pnpm  dev",
     "dev": "concurrently \"pnpm  dev:client\" \"pnpm  dev:server\"",
     "build:client": "tsc -b && vite build",

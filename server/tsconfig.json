@@ -1,12 +1,21 @@
 {
   "compilerOptions": {
     "composite": true,
+    "target":"ESNext",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
     "skipLibCheck": true,
     "module": "ESNext",
     "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true,
     "outDir":"../dist",
-    "rootDir":"../"
+    "rootDir":"../",
+    "baseUrl": ".",
+    "paths":{
+	    "@/*":[
+		    "./src/*"
+	    ]
+    },
 
   },
   "include": ["../server/**/*.ts","../common/**/*.ts"]
