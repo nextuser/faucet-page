@@ -19,7 +19,7 @@ export function getSigner(): Ed25519Keypair{
     const mnemonic = process.env.MNEMONIC || ''
     if(mnemonic == "") {
         console.error("export  MNMONIC FIRST");
-        exit("no MNEMNIC environ variable")
+        exit("no MNEMNIC environment variable")
     } 
     let signer = Ed25519Keypair.deriveKeypair(mnemonic);
     console.log(`signer.address=${signer.toSuiAddress}`);

@@ -33,17 +33,17 @@ export const FaucetPage = () => {
     let [faucet_enable , set_faucet_enable ] = useState(false)
     let update_total =  ()=>{
       test_client.getBalance({owner:FAUCET}).then((balance) => {
-      console.log('Balance:', balance);
-      set_total_balance(Number(balance.totalBalance)/1e9);
-    });
-  }
+        console.log('Balance:', balance);
+        set_total_balance(Number(balance.totalBalance)/1e9);
+      });
+    }
 
-  let update_recipient_test =  ()=>{
-      test_client.getBalance({owner:recipient}).then((balance) => {
-      console.log('Balance:', balance);
-      set_testnet_balance(Number(balance.totalBalance)/1e9);
-    });
-  }
+    let update_recipient_test =  ()=>{
+        test_client.getBalance({owner:recipient}).then((balance) => {
+        console.log('Balance:', balance);
+        set_testnet_balance(Number(balance.totalBalance)/1e9);
+      });
+    }
     const redirect_faucet = ( e )=>{
       const url = `https://faucet-rpc.vercel.app/v1/gas?recipient=${recipient}`
       window.location.href=url;
@@ -62,8 +62,10 @@ export const FaucetPage = () => {
             }
         }
         formData.FixedAmountRequest.recipient = recipient;
+        let url =`${faucet_config.rpc_url}?recipient=${recipient}`;
+        console.log(url);
         try {
-          const res = await fetch(`${faucet_config.rpc_url}?recipient=${recipient}`, {
+          const res = await fetch(url, {
             method: 'GET',
             headers: {
               'Content-Type':  'text/plain',
@@ -75,7 +77,7 @@ export const FaucetPage = () => {
             setMsg('Network response was not ok');
             return;
           }
-    
+          //console.log("faucet result:",await res.text());
           const result : FaucetResult = await res.json();
           console.log(result)
           let str = result.succ ? 'faucet success.':'faucet failed:' ;

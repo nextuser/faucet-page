@@ -1,6 +1,7 @@
 
 import {FaucetPage} from './FaucetPage'
 
+import './App.css'
 function App() {
   return (
     <>
