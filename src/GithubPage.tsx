@@ -21,7 +21,7 @@ type UserType = {
     userData? : UserType
  }
 
-
+const redirectURI = 'http://localhost:6789'
 
 function GithubPage() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -68,36 +68,49 @@ function GithubPage() {
     else if (code) {
         queryCode(code).then(()=>setLoading(false));
     }
-  }, [code])
+  }, [])
 
   function oAuthGitHub() {
     const clientId = 'Ov23liTwqMa4FQe8ymnB'
-    const redirectURI = 'http://localhost:6789'
+    
     const ghScope = 'read:user'
     const oAuthURL = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectURI}&scope=${ghScope}`
 
     window.location.href = oAuthURL
   }
 
-  function requestFaucet(token : string,addr:string){
+  function oAuthReset() {
+    setGitToken("");
+    localStorage.removeItem('githubAuth')
+    window.location.href = redirectURI
+    if(code) urlParams.delete(code)
+  }
+
+  function requestFaucet(token:string){
     setLoading(true) // Loading is true while our app is fetching
-    let reqUrl = `/faucet/github?address=${addr}`
-    console.log(`url =`,reqUrl,"token", token);
+    let reqUrl = `/faucet/github?address=${encodeURI(address)}&token=${encodeURI(token)}`
+    console.log(`url =`,reqUrl);
     fetch(reqUrl, {
-      headers: { Authorization: token },
       method: 'GET',
       })
-    .then((res) => res.json())
+    .then((res) => {
+      if(res.ok){
+        return res.json()
+      }
+      else{
+        setLoading(false);
+        oAuthReset();
+        throw "Error: Unable to fetch faucet funds. Please try again later."
+      }
+
+    })
     .then((result : FaucetResult) => {
+      console.log("faucetresult", result);
       setLoading(false)
     })
   }
 
-  function oAuthReset() {
-    setGitToken("");
-    localStorage.removeItem('githubAuth')
-    if(code) urlParams.delete(code)
-  }
+ 
 
   // Creating object to hold information for 'RESET' Button component
   let resetBtn = {
@@ -113,11 +126,13 @@ function GithubPage() {
   }
   // 登录后场景
   if(gitToken && gitToken.length > 0) {
-    return <><Button   />
-    	<Flex direction="column" gap="2" maxWidth="300px">
-	      <label htmlFor='address'>Sui address</label><TextField.Root id="address" variant="surface" placeholder="0xafed3..." />
-        <Button onClick={()=>requestFaucet(gitToken,address)} disabled={ gitToken == "" } >Reques Faucet</Button>
+    return <>
+    	<Flex direction="column" gap="2" maxWidth="600px">
+	      <label htmlFor='address'>Sui address</label>
+        <TextField.Root id="address" variant="surface" value={address} onChange={(e)=>setAddress(e.target.value)} placeholder="0xafed3..." />
+        <Button onClick={()=>requestFaucet(gitToken)} disabled={ gitToken == "" } >Reques Faucet</Button>
         <Button onClick={oAuthReset}>Unlink GitHub</Button>
+        
       </Flex>
     </>
   }

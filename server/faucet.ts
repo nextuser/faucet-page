@@ -65,11 +65,12 @@ async  function doFaucet(target:string) :Promise<FaucetResult>{
 const  tokenMap = new Map<string,string>();
 const alloc_git_set = new Set<string>()
 export function regist_github(token : string, user_id : string){
+    console.log(`register token=>user_id`,token,user_id);
     tokenMap.set(token,user_id);
 }
 
 export async function github_faucet(token :string ,address : string ) : Promise<FaucetResult> {
-    let user_id = tokenMap[token]
+    let user_id = tokenMap.get(token)
     if(!user_id ) {
         return {succ:false,msg:`token error`,code:'token_error'};
     }

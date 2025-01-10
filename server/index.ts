@@ -6,6 +6,8 @@ import {ViteDevServer,ProxyOptions} from 'vite'
 import {faucet_config} from '../common/config'
 import { enableProxyAgent } from 'proxy';
 import path from 'path'
+import axios from 'axios'
+import { emitWarning } from 'process';
 
 
 dotenv.config()
@@ -102,11 +104,15 @@ app.get('/help',(req,res)=>{
 //Catch API request and route appropriately
 app.get('/api/auth', async (req, res) => {
     const ghCode = req.query.code;
+    const data ={
+      clientId: process.env.GITHUB_CLIENT_ID,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET,
+      code:ghCode
+    }
     let url =`https://github.com/login/oauth/access_token?client_id=${clientId}&client_secret=${clientSecret}&code=${ghCode}`;
-    console.log(url);
     //Send code to GitHub with 
     const result = await fetch(encodeURI(url), {
-        method: 'POST',
+        method: 'GET',
         headers: {
             "Accept": "application/json"
         }
@@ -139,8 +145,10 @@ app.get('/api/auth', async (req, res) => {
 
 app.get('/faucet/github', async (req, res) => {
   const address = req.query.address;
-  const token = req.headers.authorization
-  console.log('/faucet/github req headers',req.headers,',address=',address);
+  let token:string = req.query.token;
+  
+  console.log("req.query:",req.query);
+  console.log('/faucet/github req headers token=',token,',address=',address);
   
   res.json(await github_faucet(token,address))
 })

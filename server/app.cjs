@@ -50465,10 +50465,11 @@ async function doFaucet(target) {
 var tokenMap = /* @__PURE__ */ new Map();
 var alloc_git_set = /* @__PURE__ */ new Set();
 function regist_github(token, user_id) {
+  console.log(`register token=>user_id`, token, user_id);
   tokenMap.set(token, user_id);
 }
 async function github_faucet(token, address) {
-  let user_id = tokenMap[token];
+  let user_id = tokenMap.get(token);
   if (!user_id) {
     return { succ: false, msg: `token error`, code: "token_error" };
   }
@@ -50583,20 +50584,30 @@ app.get("/help", (req, res) => {
 });
 app.get("/api/auth", async (req, res) => {
   const ghCode = req.query.code;
+  const data = {
+    clientId: process.env.GITHUB_CLIENT_ID,
+    clientSecret: process.env.GITHUB_CLIENT_SECRET,
+    code: ghCode
+  };
   let url = `https://github.com/login/oauth/access_token?client_id=${clientId}&client_secret=${clientSecret}&code=${ghCode}`;
-  console.log(url);
-  const result = await fetch(url, {
-    method: "POST",
+  const result = await fetch(encodeURI(url), {
+    method: "GET",
     headers: {
       "Accept": "application/json"
     }
   });
-  const token = await res.json();
+  if (!result.ok) {
+    throw new Error(`/api/auth fetch https://github.com/login/oauth/access_token error:${result.status}`);
+  }
+  const token = await result.json();
   console.log("/api/auth token object:", token);
   console.log("https://api.github.com/user");
   const ret = await fetch("https://api.github.com/user", {
     headers: { Authorization: `${token.token_type} ${token.access_token}` }
   });
+  if (!ret.ok) {
+    throw new Error(`/api/auth fetch https://api.github.com/user error:${ret.status}`);
+  }
   let user_res = await ret.json();
   console.log("/api/auth user_res:", user_res);
   if (user_res.login) {
@@ -50609,8 +50620,9 @@ app.get("/api/auth", async (req, res) => {
 });
 app.get("/faucet/github", async (req, res) => {
   const address = req.query.address;
-  const token = req.headers.authorization;
-  console.log("/faucet/github req headers", req.headers, ",address=", address);
+  let token = req.query.token;
+  console.log("req.query:", req.query);
+  console.log("/faucet/github req headers token=", token, ",address=", address);
   res.json(await github_faucet(token, address));
 });
 if (process.env.NODE_ENV === "production") {
