@@ -23,14 +23,25 @@ type UserType = {
 
 const redirectURI = 'http://localhost:6789'
 
+function getMsg(result:FaucetResult){
+  if(result.succ){
+    return "Success! Digest=" + result.digest
+  }else{
+    return "Failed!" + result.msg + (result.digest ? ` Digest=${result.digest}` : "");
+  }
+}
+
 function GithubPage() {
   const urlParams = new URLSearchParams(window.location.search);
   const code = urlParams.get('code')
+  
   console.log("href:",window.location.href);
 
   const [loading, setLoading] = useState(false);
   const [gitToken,setGitToken] = useState<string>("")
   const [address,setAddress] = useState<string>("")
+  const [msg,setMsg] = useState<string>("")
+  const [userData,setUserData] = useState<UserType>()
 
 
   const queryCode = async (code :string) =>{
@@ -106,6 +117,7 @@ function GithubPage() {
     })
     .then((result : FaucetResult) => {
       console.log("faucetresult", result);
+      setMsg(getMsg(result))
       setLoading(false)
     })
   }
@@ -132,7 +144,7 @@ function GithubPage() {
         <TextField.Root id="address" variant="surface" value={address} onChange={(e)=>setAddress(e.target.value)} placeholder="0xafed3..." />
         <Button onClick={()=>requestFaucet(gitToken)} disabled={ gitToken == "" } >Reques Faucet</Button>
         <Button onClick={oAuthReset}>Unlink GitHub</Button>
-        
+        {msg && <label>{msg}</label>}
       </Flex>
     </>
   }
