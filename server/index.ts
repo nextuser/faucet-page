@@ -1,22 +1,38 @@
 import express from 'express';
-import { faucet,clearDaily } from './faucet';
+import { faucet,clearDaily,regist_github,github_faucet } from './faucet';
 import dotenv from 'dotenv'
 import cors from 'cors'
 import {ViteDevServer,ProxyOptions} from 'vite'
 import {faucet_config} from '../common/config'
+import { enableProxyAgent } from 'proxy';
+import path from 'path'
 
 
 dotenv.config()
+// DOTENV later
+const clientId = process.env.clientId
+const clientSecret = process.env.clientSecret
+const MNEMONIC = process.env.MNEMONIC
+
+if(!clientId || !clientSecret || !MNEMONIC ){
+	console.log('set clientId or clientSecret MNEMONIC in ENV first');
+	exit(-1)
+}
+
+
+
 const app = express();
 
 
-export interface ReqData  {  
+interface ReqData  {  
   FixedAmountRequest: {
       recipient: string
   }
 };
+
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
 app.post('/v1/gas', (req, res) => {
   if(req.header('Content-Type')  == 'application/json'){
@@ -81,33 +97,99 @@ app.get('/help',(req,res)=>{
 });
 
 
-//if ( process.env.RUNNING == 'OK' )
-{
-  const port = process.env.PORT || 3001;
-  app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
-  });
+///---------------------------- api/auth to github---------------------------------
 
-  clearDaily();
-}
-
-
-export function expressPlugin() {
-  return {
-    name: 'express-plugin',
-    config(){
-      return {
-        server:{proxy},
-        preview:{proxy}
-      }
-    },
-    configureServer(server: ViteDevServer) {
-      server.middlewares.use(app)
+//Catch API request and route appropriately
+app.get('/api/auth', async (req, res) => {
+    const ghCode = req.query.code;
+    let url =`https://github.com/login/oauth/access_token?client_id=${clientId}&client_secret=${clientSecret}&code=${ghCode}`;
+    console.log(url);
+    //Send code to GitHub with 
+    const result = await fetch(encodeURI(url), {
+        method: 'POST',
+        headers: {
+            "Accept": "application/json"
+        }
+    });
+    if(!result.ok){
+      throw new Error(`/api/auth fetch https://github.com/login/oauth/access_token error:${result.status}`);
     }
-  }
+
+    const token = await result.json();
+
+    console.log("/api/auth token object:",token); 
+    console.log('https://api.github.com/user'); 
+    const ret = await fetch('https://api.github.com/user', {
+        headers: { Authorization: `${token.token_type} ${token.access_token}` }
+    })
+    if(! ret.ok){
+       throw new Error(`/api/auth fetch https://api.github.com/user error:${ret.status}`);
+    }
+    let user_res= await ret.json();
+    console.log("/api/auth user_res:",user_res)
+    if(user_res.login){    
+      regist_github(token.access_token,user_res.login);
+      const ghResponse = {"userData": user_res, "token": token.access_token}
+      res.json(ghResponse)
+    } else{
+      res.json({"error":"no user res.login",user_res})
+    }
+})
+
+
+app.get('/faucet/github', async (req, res) => {
+  const address = req.query.address;
+  const token = req.headers.authorization
+  console.log('/faucet/github req headers',req.headers,',address=',address);
+  
+  res.json(await github_faucet(token,address))
+})
+
+
+
+// Catch any other request to the 8080 and redirect back to the client files
+// Only if in production environment
+if (process.env.NODE_ENV === 'production') {
+    app.get('*', (req, res) => {
+        console.log("Server:", "Routing pages...")
+
+        app.use(express.static(path.join(__dirname, '../client')));
+        res.sendFile(path.join(__dirname, '../client/index.html'));
+    })
 }
 
-export default app;
+// app.listen(PORT, () => {
+//     console.log('Server:', `listening on port ${PORT}`)
+// })
+
+
+console.log("RUNNING=",process.env.RUNNING);
+
+const port = process.env.PORT || 3001;
+//enableProxyAgent();
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
+
+clearDaily();
+
+
+// export function expressPlugin() {
+//   return {
+//     name: 'express-plugin',
+//     config(){
+//       return {
+//         server:{proxy},
+//         preview:{proxy}
+//       }
+//     },
+//     configureServer(server: ViteDevServer) {
+//       server.middlewares.use(app)
+//     }
+//   }
+// }
+
+// export default app;
 
 
 

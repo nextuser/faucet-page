@@ -5,6 +5,7 @@ import { FaucetResult } from '../common/type';
 
 const FAUCET=faucet_config.faucet_address
 
+
 function isAddrValid(str : string):boolean{
     if(str && str.length == 66 && str.startsWith('0x')){
         return true;
@@ -21,7 +22,7 @@ interface ReqData  {
   };
 
 const default_msg = `Welcome : faucet ${faucet_config.faucet_amount/1e9} SUI  testnet once a day, when you have at lease ${faucet_config.mainnet_balance_limit/1e9} SUI in mainnet`
-export const FaucetPage = () => {
+const FaucetPage = () => {
     let [ msg , setMsg ] = useState(default_msg); 
     let [recipient , setRecipient] = useState<string>('')
 
@@ -182,3 +183,6 @@ export const FaucetPage = () => {
 
     </>
 }
+
+
+export default FaucetPage;

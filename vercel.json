@@ -13,6 +13,9 @@
   ],
   "rewrites": [
     { "source": "/v1/gas/:path*", "destination": "/server/app.cjs" },
+    { "source": "/api/auth/*", "destination": "/server/app.cjs" },
+    { "source": "/faucet/github/*", "destination": "/server/app.cjs" },
+    
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "buildCommand": "pnpm build",

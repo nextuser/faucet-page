@@ -3,5 +3,5 @@ export type FaucetResult = {
     msg: string,
     digest?:string,
     code : 'mainnet_limit' | 'faucet_limit' | 'time_limit' 
-            |'tx_fail' | 'tx_status_error' | 'tx_succ'
+            |'tx_fail' | 'tx_status_error' | 'tx_succ' | 'token_error'
 }

@@ -1,0 +1,7 @@
+{ "web": {
+ "project_id": "faucet-6789", "auth_uri": "https://accounts.google.com/o/oauth2/auth", 
+ "token_uri": "https://oauth2.googleapis.com/token", 
+ "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+ "scope":"https://www.googleapis.com/auth/userinfo.profile",
+ "redirect_uris": ["http://localhost:6789", "https://facet-page.vercel.app", "https://faucet.mov"],
+ "javascript_origins": ["http://localhost:6789", "https://facet-page.vercel.app", "https://faucet.mov"] } }
