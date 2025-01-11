@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import "@radix-ui/themes/styles.css";
 import { Theme, Button,TextField,Box,Flex } from "@radix-ui/themes";
 import { FaucetResult } from 'common/type';
-
+import site_config from './site_config'
 
 type UserType = {
   avatar_url: string;
@@ -22,6 +22,7 @@ type UserType = {
  }
 
 const redirectURI = 'http://localhost:6789'
+
 
 function getMsg(result:FaucetResult){
   if(result.succ){
@@ -43,36 +44,42 @@ function GithubPage() {
   const [msg,setMsg] = useState<string>("")
   const [userData,setUserData] = useState<UserType>()
 
-
+//  成功 code=>token  ,失败 code =>init
   const queryCode = async (code :string) =>{
     setLoading(true) // Loading is true while our app is fetching
-    console.log(code);
     let ret = await fetch(`/api/auth?code=${code}`)
     try{
       let ret_json = await ret.json();
       console.log("/api/auth result:",ret_json);
       let data = ret_json as ProfileData
       if( data && data.token && data.userData?.login) {
-        
         localStorage.setItem("githubAuth",data.token!)
+        localStorage.setItem("githubExpired", String(new Date().getUTCMilliseconds() + site_config.github_time_expired));
         setGitToken(data.token);
-        setLoading(false)
         console.log("right profile data",data.userData);
+        return;
       }
-      return;
+      
     }
     catch(ex){
       console.log('error',ex);
+    }
+    finally{
+      setLoading(false)
     }
     oAuthReset();
    }
 
   useEffect(() => {
-    const token = localStorage.getItem('githubAuth')
-    console.log('local token :',token);
+    let token :string |null = null;
+    const time = Number(localStorage.getItem('githubExpired'));
+    if( time > new Date().getUTCMilliseconds()){
+      token = localStorage.getItem('githubAuth')
+    }
+    
     let ignore = false;
 
-    if (token && typeof(token) == 'string'  && String(token).indexOf('error') == -1) {
+    if (token != null) {
       setLoading(false)
       setGitToken(token)
     } 
@@ -82,9 +89,8 @@ function GithubPage() {
   }, [])
 
   function oAuthGitHub() {
-    const clientId = 'Ov23liTwqMa4FQe8ymnB'
-    
-    const ghScope = 'read:user'
+    const clientId = encodeURI('Ov23liTwqMa4FQe8ymnB')    
+    const ghScope = encodeURI(site_config.github_scope)//'read:user'
     const oAuthURL = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectURI}&scope=${ghScope}`
 
     window.location.href = oAuthURL
@@ -93,7 +99,8 @@ function GithubPage() {
   function oAuthReset() {
     setGitToken("");
     localStorage.removeItem('githubAuth')
-    window.location.href = redirectURI
+    let oldUrl = new URL(window.location.href);
+    window.location.href = `${oldUrl.origin}${oldUrl.pathname}`
     if(code) urlParams.delete(code)
   }
 
@@ -111,11 +118,14 @@ function GithubPage() {
       else{
         setLoading(false);
         oAuthReset();
-        throw "Error: Unable to fetch faucet funds. Please try again later."
+        throw "Error: Unable to fetch faucet funds. Please try again later.";
       }
 
     })
     .then((result : FaucetResult) => {
+      if(result.code == 'token_error'){
+        oAuthReset();
+      }
       console.log("faucetresult", result);
       setMsg(getMsg(result))
       setLoading(false)
