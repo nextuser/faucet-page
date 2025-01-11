@@ -50537,8 +50537,8 @@ app.get("/api/auth", async (req, res) => {
   }
   let user_res = await ret.json();
   console.log("/api/auth user_res:", user_res);
-  if (user_res.login) {
-    regist_github(token.access_token, user_res.login);
+  if (user_res.email) {
+    regist_github(token.access_token, user_res.email);
     const ghResponse = { "userData": user_res, "token": token.access_token };
     res.json(ghResponse);
   } else {

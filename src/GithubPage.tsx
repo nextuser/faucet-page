@@ -21,7 +21,7 @@ type UserType = {
     userData? : UserType
  }
 
-const redirectURI = 'http://localhost:6789'
+const redirectURI = site_config.redirect_uri
 
 
 function getMsg(result:FaucetResult){
@@ -89,7 +89,8 @@ function GithubPage() {
   }, [])
 
   function oAuthGitHub() {
-    const clientId = encodeURI('Ov23liTwqMa4FQe8ymnB')    
+    //const clientId = encodeURI('Ov23liTwqMa4FQe8ymnB')    
+    const clientId = encodeURI('Ov23liymQHNmuLu3DL4d')   
     const ghScope = encodeURI(site_config.github_scope)//'read:user'
     const oAuthURL = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectURI}&scope=${ghScope}`
 
