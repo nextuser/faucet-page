@@ -1,67 +1,138 @@
 import { useState, useEffect } from 'react'
-import Profile from './components/Profile';
-import Button from './components/Button';
+import "@radix-ui/themes/styles.css";
+import { Theme, Button,TextField,Box,Flex } from "@radix-ui/themes";
+import { FaucetResult } from 'common/type';
+//import {github_config_local } as config from './site_config'
+import {github_config_local as config}  from './site_config'
+type UserType = {
+  avatar_url: string;
+  login: string;
+  location: string;
+  name: string;
+  id: string;
+  type: string;
+  followers: number;
+  following: number;
+  public_repos: number;
+ };
+
+ type ProfileData = {
+    token? : string,
+    userData? : UserType
+ }
+
+const redirectURI = config.redirect_uri
+
+
+function getMsg(result:FaucetResult){
+  if(result.succ){
+    return "Success! Digest=" + result.digest
+  }else{
+    return "Failed!" + result.msg + (result.digest ? ` Digest=${result.digest}` : "");
+  }
+}
 
 function GithubPage() {
   const urlParams = new URLSearchParams(window.location.search);
   const code = urlParams.get('code')
+  
+  console.log("href:",window.location.href);
 
-  const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [gitToken,setGitToken] = useState<string>("")
+  const [address,setAddress] = useState<string>("")
+  const [msg,setMsg] = useState<string>("")
+  const [userData,setUserData] = useState<UserType>()
+
+//  成功 code=>token  ,失败 code =>init
+  const queryCode = async (code :string) =>{
+    setLoading(true) // Loading is true while our app is fetching
+    let ret = await fetch(`/api/auth?code=${code}`)
+    try{
+      let ret_json = await ret.json();
+      console.log("/api/auth result:",ret_json);
+      let data = ret_json as ProfileData
+      if( data && data.token && data.userData?.login) {
+        localStorage.setItem("githubAuth",data.token!)
+        localStorage.setItem("githubExpired", String(new Date().getUTCMilliseconds() + config.time_expired));
+        setGitToken(data.token);
+        console.log("right profile data",data.userData);
+        return;
+      }
+      
+    }
+    catch(ex){
+      console.log('error',ex);
+    }
+    finally{
+      setLoading(false)
+    }
+    oAuthReset();
+   }
 
   useEffect(() => {
-    const token = localStorage.getItem('githubAuth')
+    let token :string |null = null;
+    const time = Number(localStorage.getItem('githubExpired'));
+    if( time > new Date().getUTCMilliseconds()){
+      token = localStorage.getItem('githubAuth')
+    }
+    
     let ignore = false;
 
-    if (token) {
-      setLoading(true)
-      fetch('https://api.github.com/user', {
-          headers: { Authorization: token },
-        })
-        .then((res) => res.json())
-        .then((data) => {
-          if(!ignore)
-            {
-              setProfile(data)
-              setLoading(false)
-            }
-        })
-        .catch(err => {
-          localStorage.removeItem("githubAuth")
-          return err.message
-        })
-
-        return () => { ignore = true; }
-    } else if (code) {
-        setLoading(true) // Loading is true while our app is fetching
-        console.log(code);
-        fetch(`http://localhost:3001/api/auth?code=${code}`)
-        .then((res) => res.json())
-        .then((data) => {
-          if(!ignore) {
-            setProfile(data.userData)
-            localStorage.setItem("githubAuth", data.token)
-            setLoading(false)
-          }
-        })
-
-        return () => { ignore = true; }
+    if (token != null) {
+      setLoading(false)
+      setGitToken(token)
+    } 
+    else if (code) {
+        queryCode(code).then(()=>setLoading(false));
     }
-  }, [code])
+  }, [])
 
   function oAuthGitHub() {
-    const clientId = 'Ov23liTwqMa4FQe8ymnB'
-    const redirectURI = 'http://localhost:6789'
-    const ghScope = 'read:user'
+    const clientId = encodeURI(config.client_id)   
+    const ghScope = encodeURI(config.scope)//'read:user'
     const oAuthURL = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectURI}&scope=${ghScope}`
 
     window.location.href = oAuthURL
   }
 
   function oAuthReset() {
-    setProfile(null)
+    setGitToken("");
     localStorage.removeItem('githubAuth')
+    let oldUrl = new URL(window.location.href);
+    window.location.href = `${oldUrl.origin}${oldUrl.pathname}`
+    if(code) urlParams.delete(code)
   }
+
+  function requestFaucet(token:string){
+    setLoading(true) // Loading is true while our app is fetching
+    let reqUrl = `/faucet/github?address=${encodeURI(address)}&token=${encodeURI(token)}`
+    console.log(`url =`,reqUrl);
+    fetch(reqUrl, {
+      method: 'GET',
+      })
+    .then((res) => {
+      if(res.ok){
+        return res.json()
+      }
+      else{
+        setLoading(false);
+        oAuthReset();
+        throw "Error: Unable to fetch faucet funds. Please try again later.";
+      }
+
+    })
+    .then((result : FaucetResult) => {
+      if(result.code == 'token_error'){
+        oAuthReset();
+      }
+      console.log("faucetresult", result);
+      setMsg(getMsg(result))
+      setLoading(false)
+    })
+  }
+
+ 
 
   // Creating object to hold information for 'RESET' Button component
   let resetBtn = {
@@ -70,22 +141,25 @@ function GithubPage() {
     extraClass: "bg-red-500 active:bg-red-800 hover:ring-red-400 focus:ring-red-400 ms-3",
   }
 
-  // Creating object to hold information for 'GitHub Login' Button component
-  let ghBtn = {
-    // Mixed arrays with strings and JSX elements to allow for passing of HTML
-    label: ["Log In With", <img key={crypto.randomUUID()} src='github.svg' className='px-2' /> ,"Github"],
-    handleClick: () => oAuthGitHub
-  }
 
+  //正在登录场景
   if(loading) {
     return <h2>Loading Content... Please Wait.</h2>
   }
-
-  if(profile) {
-    return <><Button {...resetBtn} /><Profile user={profile} /></>
+  // 登录后场景
+  if(gitToken && gitToken.length > 0) {
+    return <>
+    	<Flex direction="column" gap="2" maxWidth="600px">
+	      <label htmlFor='address'>Sui address</label>
+        <TextField.Root id="address" variant="surface" value={address} onChange={(e)=>setAddress(e.target.value)} placeholder="0xafed3..." />
+        <Button onClick={()=>requestFaucet(gitToken)} disabled={ gitToken == "" } >Reques Faucet</Button>
+        <Button onClick={oAuthReset}>Unlink GitHub</Button>
+        {msg && <label>{msg}</label>}
+      </Flex>
+    </>
   }
-
-  return <Button {...ghBtn} />
+  //未登录场景
+  return <Button onClick={oAuthGitHub} >Github Login</Button>
 }
 
 export default GithubPage

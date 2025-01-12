@@ -121,24 +121,35 @@ app.get('/api/auth', async (req, res) => {
       throw new Error(`/api/auth fetch https://github.com/login/oauth/access_token error:${result.status}`);
     }
 
+/**
+ * [1] /api/auth token object: {
+[1]   error: 'bad_verification_code',
+[1]   error_description: 'The code passed is incorrect or expired.',
+[1]   error_uri: 'https://docs.github.com/apps/managing-oauth-apps/troubleshooting-oauth-app-access-token-request-errors/#bad-verification-code'
+ */
     const token = await result.json();
-
+    if(token.error){
+      res.json({ok:false, error:token.error, error_description:token.error_description, error_uri:token.error_uri})
+      return;
+    };
     console.log("/api/auth token object:",token); 
     console.log('https://api.github.com/user'); 
     const ret = await fetch('https://api.github.com/user', {
         headers: { Authorization: `${token.token_type} ${token.access_token}` }
     })
+    
     if(! ret.ok){
-       throw new Error(`/api/auth fetch https://api.github.com/user error:${ret.status}`);
+       return res.json({ok:false,error_description:`error in https://api.github.com/user error status:${ret.statusText}`});
     }
     let user_res= await ret.json();
     console.log("/api/auth user_res:",user_res)
     if(user_res.email){    
       regist_github(token.access_token,user_res.email);
-      const ghResponse = {"userData": user_res, "token": token.access_token}
+      const ghResponse = {ok:true,"userData": user_res, "token": token.access_token}
       res.json(ghResponse)
     } else{
-      res.json({"error":"no user res.login",user_res})
+      console.log("/api/auth user_res:",user_res);
+      res.json({ok:false,error_description:"get user_email failed",user_res})
     }
 })
 

@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react'
 import "@radix-ui/themes/styles.css";
 import { Theme, Button,TextField,Box,Flex } from "@radix-ui/themes";
 import { FaucetResult } from 'common/type';
-import site_config from './site_config'
-
+// upload 的时候替换 github_config_local =》 github_config
+import {github_config as config}  from './site_config'
 type UserType = {
   avatar_url: string;
   login: string;
@@ -17,11 +17,13 @@ type UserType = {
  };
 
  type ProfileData = {
-    token? : string,
+    ok : string
+    error_description?:string
+    token? : string
     userData? : UserType
  }
 
-const redirectURI = site_config.redirect_uri
+const redirectURI = config.redirect_uri
 
 
 function getMsg(result:FaucetResult){
@@ -52,12 +54,14 @@ function GithubPage() {
       let ret_json = await ret.json();
       console.log("/api/auth result:",ret_json);
       let data = ret_json as ProfileData
-      if( data && data.token && data.userData?.login) {
+      if( data.ok && data.token && data.userData?.login) {
         localStorage.setItem("githubAuth",data.token!)
-        localStorage.setItem("githubExpired", String(new Date().getUTCMilliseconds() + site_config.github_time_expired));
+        localStorage.setItem("githubExpired", String(new Date().getUTCMilliseconds() + config.time_expired));
         setGitToken(data.token);
         console.log("right profile data",data.userData);
         return;
+      } else if(data.error_description){
+        setMsg(data.error_description);
       }
       
     }
@@ -89,9 +93,8 @@ function GithubPage() {
   }, [])
 
   function oAuthGitHub() {
-    //const clientId = encodeURI('Ov23liTwqMa4FQe8ymnB')    
-    const clientId = encodeURI('Ov23liymQHNmuLu3DL4d')   
-    const ghScope = encodeURI(site_config.github_scope)//'read:user'
+    const clientId = encodeURI(config.client_id)   
+    const ghScope = encodeURI(config.scope)//'read:user'
     const oAuthURL = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectURI}&scope=${ghScope}`
 
     window.location.href = oAuthURL
@@ -127,8 +130,8 @@ function GithubPage() {
       if(result.code == 'token_error'){
         oAuthReset();
       }
-      console.log("faucetresult", result);
       setMsg(getMsg(result))
+      console.log("faucetresult", result);
       setLoading(false)
     })
   }
@@ -160,7 +163,10 @@ function GithubPage() {
     </>
   }
   //未登录场景
-  return <Button onClick={oAuthGitHub} >Github Login</Button>
+  return <Flex direction="column" gap="2" maxWidth="600px">
+    <Button onClick={oAuthGitHub} >Github Login</Button>
+    {msg && <label>{msg}</label>}
+    </Flex>
 }
 
 export default GithubPage

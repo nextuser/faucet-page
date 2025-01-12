@@ -2,6 +2,8 @@ import {useState,useEffect} from 'react'
 import { SuiClient, getFullnodeUrl  } from '@mysten/sui/client';
 import { faucet_config } from '../common/config';
 import { FaucetResult } from '../common/type';
+import "@radix-ui/themes/styles.css";
+import { Theme, Button,TextField,Box,Flex } from "@radix-ui/themes";
 
 const FAUCET=faucet_config.faucet_address
 
@@ -23,7 +25,8 @@ interface ReqData  {
 
 const default_msg = `Welcome : faucet ${faucet_config.faucet_amount/1e9} SUI  testnet once a day, when you have at lease ${faucet_config.mainnet_balance_limit/1e9} SUI in mainnet`
 const FaucetPage = () => {
-    let [ msg , setMsg ] = useState(default_msg); 
+    const [loading, setLoading] = useState(false);
+    let [ msg , setMsg ] = useState(''); 
     let [recipient , setRecipient] = useState<string>('')
 
     let [mainnet_balance , set_mainnet_balance] = useState<number>(0)
@@ -33,9 +36,11 @@ const FaucetPage = () => {
 
     let [faucet_enable , set_faucet_enable ] = useState(false)
     let update_total =  ()=>{
+      setLoading(true)
       test_client.getBalance({owner:FAUCET}).then((balance) => {
         console.log('Balance:', balance);
         set_total_balance(Number(balance.totalBalance)/1e9);
+        setLoading(false)
       });
     }
 
@@ -81,12 +86,12 @@ const FaucetPage = () => {
           //console.log("faucet result:",await res.text());
           const result : FaucetResult = await res.json();
           console.log(result)
-          let str = result.succ ? 'faucet success.':'faucet failed:' ;
+          let str = result.succ ? 'success!':'failed!' ;
           if(result.digest){
-            str += `transaction digest=${result.digest}`
+            str += ` transaction digest=${result.digest}`
           }
                     
-          str += result.succ ? '':result.msg
+          str += result.succ ?  '':result.msg
           setMsg(str)
           if(result.succ){
             update_recipient_test();
@@ -99,14 +104,18 @@ const FaucetPage = () => {
       };
 
     useEffect( ()=>{
-
+      if(recipient.length == 0){
+        setMsg('input your Sui address to receive Sui on testnet ');
+        set_faucet_enable(false);
+        return 
+      }
         let enable = total_balance >  (faucet_config.faucet_amount + faucet_config.gas_budget)/1e9;
         if(enable){
           enable = mainnet_balance >= faucet_config.mainnet_balance_limit/1e9
           if(!enable){
             setMsg(`this address has no enough balance in mainnet . you need at least ${faucet_config.mainnet_balance_limit/1e9} SUI @mainnet`);
           }
-          else{
+          else if(msg.length == 0){
             setMsg('Click the button to request faucet')
           }
         }
@@ -137,48 +146,59 @@ const FaucetPage = () => {
 
       },[recipient])
 
+    if(loading){
+        return <h2>Loading Content... Please Wait.</h2>
+    }
    
     return <>
  
-    <div className="px-20 flex flex-col items-center text-center w-600 h-screen mx-auto bg-blue:200">
+ <Flex direction="column" gap="2" maxWidth="600px">
       <h1 className="text-2xl font-bold mb-4">Faucet@Sui_network</h1>
 
-
+      <label htmlFor="testnet_total" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Faucet Balance @testnet:</label>
       <div>
-            <label htmlFor="testnet_total" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Faucet Balance @testnet:</label>
+           
             <input type="text" id="testnet_total" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="John" 
             value={total_balance || '0'} readOnly required />
+            
+            <label htmlFor='testnet_total'>Faucet totalbalance@testnet</label>
+            <TextField.Root id="testnet_total" variant="surface" value={total_balance || ''} readOnly  />
+
       </div>
 
       <div>
-            <label htmlFor="mainnet_balance" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your Balance @mainnet:</label>
-            <input type="text" id="mainnet_balance" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="John" 
-            value={mainnet_balance || '0'} readOnly required />
+        <label htmlFor='testnet_balance'>Your balance@mainnet</label>
+        <TextField.Root id="testnet_balance" variant="surface" value={mainnet_balance || '0'}  readOnly></TextField.Root>      
       </div>
-      <div>
-            <label htmlFor="testnet_balance" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your Balance @testnet:</label>
-            <input type="text" id="testnet_balance" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="John" 
-            value={testnet_balance || '0'} readOnly required />
-      </div>
-      <div>
-            <label htmlFor="address" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Sui Address</label>
-            <input type="text"  id="address" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            value={recipient} onChange={(e)=>setRecipient(e.target.value)} placeholder="0x..." required />
-      </div>
-      <div>
-      <button id="request_faucet"
-        onClick={handleRequestFaucet}
-        className="bg-blue-300 text-white px-4 py-2 rounded dark:bg-blue-500 dark:hover:bg-blue-600 hover:bg-blue-400"
-        disabled={!faucet_enable}
-      >
-        Request Faucet
-      </button>
 
-      
-      <label htmlFor="request_faucet" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{msg}</label>
-      
+      <div>
+        <label htmlFor='testnet_balance'>Your balance@testnet</label>
+        <TextField.Root id="testnet_balance" variant="surface" value={testnet_balance}  readOnly />
       </div>
-    </div>
+      <div>
+        <label htmlFor='address'>Sui address</label>
+        <TextField.Root id="address" variant="surface" value={recipient || ''}  onChange={(e)=>{
+          let addr = e.target.value
+          if(addr.length == 0){
+            setMsg('input your Sui address to receive Sui on testnet ');
+          } else{
+            setMsg('');
+          }
+          setRecipient(addr)
+        }} placeholder="0xaf83..."/>       
+      </div>
+
+      <div>
+        <Button id="request_faucet"
+          onClick={handleRequestFaucet}
+          className="bg-blue-300 text-white px-4 py-2 rounded dark:bg-blue-500 dark:hover:bg-blue-600 hover:bg-blue-400"
+          disabled={!faucet_enable}
+        >
+          Request Faucet
+        </Button>
+        {msg && <label  className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{msg}</label>}
+      </div>
+    </Flex>
 
 
     </>
