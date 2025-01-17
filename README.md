@@ -4,8 +4,8 @@ A JSON-RPC service for SUI token faucet functionality, built with Express.js and
 
 ## Prerequisites
 
-- Node.js >= 16.0.0
-- pnpm >= 7.0.0 (`npm install -g pnpm`)
+- Node.js >= 20.0.0
+- pnpm >= 9.12.3 (`npm install -g pnpm`)
 
 ## Installation
 
@@ -32,50 +32,66 @@ pnpm start
 
 ## Quick Start
 
-1. Install pnpm if you haven't already:
+- 1  Install pnpm if you haven't already:
 ```bash
 npm install -g pnpm
 ```
 
-2. Install dependencies:
+- 2  Install dependencies:
 ```bash
 pnpm install
 ```
 
-3. Create a `.env` file:
-```env
-PORT=3000
-NODE_ENV=development
-```
+- 3  Create a `.env` file:
+need register  a git oauth key in [github](https://github.com/settings/developers)
+mnemonics is the faucet account 's mnemonic to generate private key
 
-4. Start development server:
+configure the clientId in site_config.ts
+
+    - 3.1 file: .env
+```bash
+export MNEMONIC= (your mnemonic here)
+export clientId=
+export clientSecret={clientSecret}
+```
+    - 3.2 before debug, 
+    ```bash
+    source .env
+    ```
+
+- 4 debug in localhost:
+change GithubPage.tsx
+```ts
+import {github_config_faucet as config}  from './site_config'
+```
+to
+```ts
+import {github_config_local as config}  from './site_config'
+``` 
+
+    - 4.1 debug localhost 
+    befaucet i use the local redirect uri : 'http://localhost:6789' 
+```bash
+pnpm devp
+```
+- github auth token: (oauth)[./github_auth_token.md]
+
+- 5. Start development server:
 ```bash
 pnpm dev
 ```
 
-5. 上传到vercel 
+- 6. 上传到vercel 
+    - 6.1  enable faucet.mov
+change GithubPage.tsx
+```ts
+import {github_config_faucet as config}  from './site_config'
+```
+
+    - 6.2 upload
+```bash
 pnpm upload
-
-## API Endpoints
-
-### JSON-RPC Endpoint: `/v1/gas`
-
-All RPC methods should be called using POST requests to the `/rpc` endpoint.
-
-```
-https://faucet-page.vercel.app/v1/gas?recipient=0x540105a7d2f5f54a812c630f2996f1790ed0e60d1f9a870ce397f03e4cec9b38
 ```
 
-### Health Check: `/health`
 
-GET request to check service health status.
 
-## Available RPC Methods
-
-| Method | Parameters | Description |
-|--------|------------|-------------|
-| ping | none | Health check method |
-| getFaucet | [address: string] | Request tokens for a wallet address |
-| getBalance | [address: string] | Get wallet balance |
-
-## Project Structure

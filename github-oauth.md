@@ -15,14 +15,14 @@ participant  script as script
 
 end box
 box Server
-participant  react_sever
+participant  react_server
 participant  rpcserver as rpc
 end box
 participant github_auth as github
 autonumber
 
 user -> browser : open url
-browser -> react_sever   : request page
+browser -> react_server   : request page
 react_server --> browser : page
 
 browser -> script: load
@@ -35,8 +35,8 @@ note over browser,github:{client_id,redirect_uri,state:?,scope,login?}
  
  === browser - github login==
 github -->browser : "${redirect_uri}?code=xxx&sate=yyy"
-browser -> react_sever:   "${redirect_uri}?code=xxx&sate=yyy"
-react_sever -->browser : page
+browser -> react_server:   "${redirect_uri}?code=xxx&sate=yyy"
+react_server -->browser : page
 browser -> script: load
 note over script: todo  ,check state
 script -> rpc:  rpc_uri?code=xxx
