@@ -15,7 +15,16 @@ export const github_config : SiteConfig={
     redirect_uri : 'https://faucet-page.vercel.app',
     scope:'user:email',
     time_expired :  1000*60*10 ,//10 minutes  =>milliseconds
-    client_id:'Ov23liymQHNmuLu3DL4d'
+    client_id:'Ov23liymQHNmuLu3DL4d'  //faucetpage.vercel.app
+    
+}
+
+export const github_config_faucet : SiteConfig={
+    redirect_uri : 'https://www.faucet.mov',
+    scope:'user:email',
+    time_expired :  1000*60*10 ,//10 minutes  =>milliseconds
+    client_id:'Ov23li4c4ki7GtmxHYbZ' //fauce.mov
+    
 }
 
 export const github_config_local : SiteConfig={
