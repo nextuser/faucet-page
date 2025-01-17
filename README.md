@@ -74,7 +74,7 @@ import {github_config_local as config}  from './site_config'
 ```bash
 pnpm devp
 ```
-- github auth token: [oauth](./github_auth_token.md)
+- github auth token: [oauth](./github-oauth.md)
 
 - 5. Start development server:
 ```bash
