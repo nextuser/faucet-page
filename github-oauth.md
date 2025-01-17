@@ -39,7 +39,7 @@ browser -> react_server:   "${redirect_uri}?code=xxx&sate=yyy"
 react_server -->browser : page
 browser -> script: load
 note over script: todo  ,check state
-script -> rpc:  rpc_uri?code=xxx
+script -> rpc:  /api/auth?code=xxx
 rpc->github: POST 
 note over rpc,github:https://github.com/login/oauth/access_token
 note over rpc,github: params:{client_id,client_secret,code,redirect_uri?} \n header:{Accept: "application/json"}'
@@ -56,7 +56,7 @@ end
 ==== token 合法阶段 ===
 user -> browser: request faucet
 browser->script : requestFaucet
-script --> rpc: 'POST faucet/github param:{ token :}'
+script --> rpc: 'POST /faucet/github param:{ token :}'
 
 rpc ->rpc : check(token, user_id)
 alt "githubAllocSet.contains(user_id)"
@@ -65,7 +65,7 @@ else
     rpc --> Sui : ptb
     
     note over rpc,Sui:  "split-coins gas, transfer-objects"
-    sui --> rpc :: result
+    Sui --> rpc :: result
     rpc --> script : { succ : true}
     
 end
