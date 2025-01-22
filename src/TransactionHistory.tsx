@@ -45,7 +45,7 @@ return (
 <>
 <br/>
 <hr/>
-<h2 className='text-2xl font-bold mb-4'>Transaction Histories</h2>
+<h2 className='text-2xl font-bold mb-4'>Transaction History</h2>
 <div className='div_600'>
 {props.transactions.map((tx:SuiTransactionBlockResponse)=>
 <div 
