@@ -156,15 +156,15 @@ function GithubPage() {
     	<Flex direction="column" gap="2" maxWidth="600px">
 	      <label htmlFor='address'>Sui address</label>
         <TextField.Root id="address" variant="surface" value={address} onChange={(e)=>setAddress(e.target.value)} placeholder="0xafed3..." />
-        <Button onClick={()=>requestFaucet(gitToken)} disabled={ gitToken == "" } >Reques Faucet</Button>
-        <Button onClick={oAuthReset}>Unlink GitHub</Button>
+        <Button className="cursor-pointer disabled:cursor-not-allowed" onClick={()=>requestFaucet(gitToken)} disabled={ gitToken == "" || address === "" } >Reques Faucet</Button>
+        <Button className="cursor-pointer" onClick={oAuthReset}>Unlink GitHub</Button>
         {msg && <label>{msg}</label>}
       </Flex>
     </>
   }
   //未登录场景
   return <Flex direction="column" gap="2" maxWidth="600px">
-    <Button onClick={oAuthGitHub} >Github Login</Button>
+    <Button className="cursor-pointer" onClick={oAuthGitHub} >Github Login</Button>
     {msg && <label>{msg}</label>}
     </Flex>
 }

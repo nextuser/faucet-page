@@ -155,13 +155,10 @@ const FaucetPage = () => {
  <Flex direction="column" gap="2" maxWidth="600px">
       <h1 className="text-2xl font-bold mb-4">Faucet@Sui_network</h1>
 
-      <label htmlFor="testnet_total" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Faucet Balance @testnet:</label>
+     
       <div>
            
-            <input type="text" id="testnet_total" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="John" 
-            value={total_balance || '0'} readOnly required />
-            
-            <label htmlFor='testnet_total'>Faucet totalbalance@testnet</label>
+            <label htmlFor='testnet_total'>Faucet total balance@testnet</label>
             <TextField.Root id="testnet_total" variant="surface" value={total_balance || ''} readOnly  />
 
       </div>
@@ -191,7 +188,7 @@ const FaucetPage = () => {
       <div>
         <Button id="request_faucet"
           onClick={handleRequestFaucet}
-          className="bg-blue-300 text-white px-4 py-2 rounded dark:bg-blue-500 dark:hover:bg-blue-600 hover:bg-blue-400"
+          className="cursor-pointer w-full disabled:cursor-not-allowed"
           disabled={!faucet_enable}
         >
           Request Faucet
