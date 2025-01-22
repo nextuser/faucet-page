@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import "@radix-ui/themes/styles.css";
 import { Theme, Button,TextField,Box,Flex } from "@radix-ui/themes";
 import { FaucetResult } from 'common/type';
-// upload 的时候替换 github_config_local =》 github_config
+//TODO upload 的时候替换 github_config_local =》 github_config
 import {github_config_faucet as config}  from './site_config'
 type UserType = {
   avatar_url: string;
@@ -34,7 +34,7 @@ function getMsg(result:FaucetResult){
   }
 }
 
-function GithubPage() {
+function GithubPage( props : { update_history : ()=>void }) {
   const urlParams = new URLSearchParams(window.location.search);
   const code = urlParams.get('code')
   
@@ -130,6 +130,7 @@ function GithubPage() {
       if(result.code == 'token_error'){
         oAuthReset();
       }
+      props.update_history();
       setMsg(getMsg(result))
       console.log("faucetresult", result);
       setLoading(false)
@@ -153,7 +154,7 @@ function GithubPage() {
   // 登录后场景
   if(gitToken && gitToken.length > 0) {
     return <>
-    	<Flex direction="column" gap="2" maxWidth="600px">
+    	<Flex direction="column" gap="2" maxWidth="800px">
 	      <label htmlFor='address'>Sui address</label>
         <TextField.Root id="address" variant="surface" value={address} onChange={(e)=>setAddress(e.target.value)} placeholder="0xafed3..." />
         <Button className="cursor-pointer disabled:cursor-not-allowed" onClick={()=>requestFaucet(gitToken)} disabled={ gitToken == "" || address === "" } >Reques Faucet</Button>
@@ -163,7 +164,7 @@ function GithubPage() {
     </>
   }
   //未登录场景
-  return <Flex direction="column" gap="2" maxWidth="600px">
+  return <Flex direction="column" gap="2" maxWidth="800px">
     <Button className="cursor-pointer" onClick={oAuthGitHub} >Github Login</Button>
     {msg && <label>{msg}</label>}
     </Flex>

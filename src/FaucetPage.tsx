@@ -2,7 +2,6 @@ import {useState,useEffect} from 'react'
 import { SuiClient, getFullnodeUrl  } from '@mysten/sui/client';
 import { faucet_config } from '../common/config';
 import { FaucetResult } from '../common/type';
-import "@radix-ui/themes/styles.css";
 import { Theme, Button,TextField,Box,Flex } from "@radix-ui/themes";
 
 const FAUCET=faucet_config.faucet_address
@@ -24,7 +23,7 @@ interface ReqData  {
   };
 
 const default_msg = `Welcome : faucet ${faucet_config.faucet_amount/1e9} SUI  testnet once a day, when you have at lease ${faucet_config.mainnet_balance_limit/1e9} SUI in mainnet`
-const FaucetPage = () => {
+const FaucetPage = ( props : {update_history : ()=>void }) => {
     const [loading, setLoading] = useState(false);
     let [ msg , setMsg ] = useState(''); 
     let [recipient , setRecipient] = useState<string>('')
@@ -93,6 +92,8 @@ const FaucetPage = () => {
                     
           str += result.succ ?  '':result.msg
           setMsg(str)
+
+          props.update_history();
           if(result.succ){
             update_recipient_test();
             update_total();
@@ -105,7 +106,7 @@ const FaucetPage = () => {
 
     useEffect( ()=>{
       if(recipient.length == 0){
-        setMsg('input your Sui address to receive Sui on testnet ');
+        setMsg('Input an address with a balance of at least 0.1 SUI on the mainnet');
         set_faucet_enable(false);
         return 
       }
@@ -152,7 +153,7 @@ const FaucetPage = () => {
    
     return <>
  
- <Flex direction="column" gap="2" maxWidth="600px">
+ <Flex direction="column" gap="2" maxWidth="800px">
       <h1 className="text-2xl font-bold mb-4">Faucet@Sui_network</h1>
 
      
@@ -177,7 +178,7 @@ const FaucetPage = () => {
         <TextField.Root id="address" variant="surface" value={recipient || ''}  onChange={(e)=>{
           let addr = e.target.value
           if(addr.length == 0){
-            setMsg('input your Sui address to receive Sui on testnet ');
+            setMsg('Input an address with a balance of at least 0.1 SUI on the mainnet');
           } else{
             setMsg('');
           }
