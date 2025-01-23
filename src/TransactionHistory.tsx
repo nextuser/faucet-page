@@ -2,16 +2,9 @@ import {useState,useEffect} from 'react'
 import { SuiClient, getFullnodeUrl,PaginatedTransactionResponse,SuiTransactionBlockResponse  } from '@mysten/sui/client';
 import { faucet_config } from '../common/config';
 import "@radix-ui/themes/styles.css";
+import CopyButton from './components/CopyButton';
 import { Theme, Button,TextField,Box,Flex } from "@radix-ui/themes";
 
-const copyContent = async (text:string) => {
-    try {
-    await navigator.clipboard.writeText(text);
-    console.log('Content copied to clipboard');
-    } catch (err) {
-    console.error('Failed to copy: ', err);
-    }
-}
 
 // 添加地址格式化函数
 const formatAddress = (address: string): string => {
@@ -49,8 +42,8 @@ return (
     <div className='div_600'>
     {
         props.transactions.map((tx:SuiTransactionBlockResponse)=>{
-        let recipent = getRecipient(tx);
-        let short_recipient = formatAddress(recipent)
+        let recipient = getRecipient(tx);
+        let short_recipient = formatAddress(recipient)
         return (<div 
             className="  rounded-xl border border-zinc-200 bg-white text-zinc-950 shadow dark:border-zinc-800 dark:text-zinc-50 overflow-hidden transition-all hover:shadow-md mb-2 dark:bg-gray-800">
         
@@ -63,14 +56,7 @@ return (
                 <div className="flex justify-between items-center mt-1">
                     <div className="font-mono text-xs text-gray-500 dark:text-gray-400 truncate max-w-[40%]">
                         {tx.digest}</div>
-                    <div className="flex space-x-2"><button onClick={()=>copyContent(tx.digest)}
-                            className="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 dark:focus-visible:ring-zinc-300 border border-zinc-200 bg-white shadow-sm hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-800 rounded-md text-xs text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-gray-100 transition-colors h-7 px-2"><svg
-                                xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                className="lucide lucide-copy h-3 sm:mr-1 mr-0">
-                                <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
-                                <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
-                            </svg><span className="hidden sm:inline">Copy ID</span></button>
+                    <div className="flex space-x-2"><CopyButton display="Copy ID" copy_value={tx.digest}></CopyButton>
                             <button onClick={(e)=>viewTransaction(tx.digest)}
                             className="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 dark:focus-visible:ring-zinc-300 border border-zinc-200 bg-white shadow-sm hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-800 rounded-md text-xs text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-gray-100 transition-colors h-7 px-2"><svg
                                 xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
@@ -90,14 +76,7 @@ return (
                     </div>
                     <div>
                         <p className="font-medium text-gray-500 dark:text-gray-400">Recipient</p>
-                        <button onClick={()=>copyContent(recipent)}
-                            className="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 dark:focus-visible:ring-zinc-300 border border-zinc-200 bg-white shadow-sm hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-800 rounded-md text-xs text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-gray-100 transition-colors h-7 px-2"><svg
-                                xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                className="lucide lucide-copy h-3 sm:mr-1 mr-0">
-                                <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
-                                <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
-                            </svg><span className="hidden sm:inline">{ short_recipient}</span></button>
+                        <CopyButton display={short_recipient} copy_value={recipient}></CopyButton>
                     </div>
                     <div>
                         <p className="font-medium text-gray-500 dark:text-gray-400">Time</p>
