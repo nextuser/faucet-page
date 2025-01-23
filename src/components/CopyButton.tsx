@@ -1,4 +1,4 @@
-let CopyButton =( props:{ display:string, copy_value: stirng})=>{
+let CopyButton =( props:{ display:string, copy_value: string})=>{
     const copyContent = async (text:string) => {
         try {
         await navigator.clipboard.writeText(text);
