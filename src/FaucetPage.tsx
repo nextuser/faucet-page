@@ -3,14 +3,16 @@ import { SuiClient, getFullnodeUrl  } from '@mysten/sui/client';
 import { faucet_config } from '../common/config';
 import { FaucetResult } from '../common/type';
 import { Theme, Button,TextField,Box,Flex } from "@radix-ui/themes";
+import { setFlagsFromString } from 'v8';
 
 const FAUCET=faucet_config.faucet_address
-
+const address_msg = `Input an address with a balance of at least ${faucet_config.mainnet_balance_limit/1e9} SUI on the mainnet`
 
 function isAddrValid(str : string):boolean{
     if(str && str.length == 66 && str.startsWith('0x')){
         return true;
     }
+    
     return false;   
 }
 
@@ -22,7 +24,7 @@ interface ReqData  {
     }
   };
 
-const default_msg = `Welcome : faucet ${faucet_config.faucet_amount/1e9} SUI  testnet once a day, when you have at lease ${faucet_config.mainnet_balance_limit/1e9} SUI in mainnet`
+const default_msg = `Welcome : faucet ${faucet_config.faucet_amount/1e9} SUI  testnet once a day, when you have at lease ${faucet_config.mainnet_balance_limit/1e9} SUI in mainnet`;
 const FaucetPage = ( props : {update_history : ()=>void }) => {
     const [loading, setLoading] = useState(false);
     let [ msg , setMsg ] = useState(''); 
@@ -106,7 +108,7 @@ const FaucetPage = ( props : {update_history : ()=>void }) => {
 
     useEffect( ()=>{
       if(recipient.length == 0){
-        setMsg('Input an address with a balance of at least 0.1 SUI on the mainnet');
+        setMsg(default_msg);
         set_faucet_enable(false);
         return 
       }
@@ -137,13 +139,22 @@ const FaucetPage = ( props : {update_history : ()=>void }) => {
         if(isAddrValid(recipient)){ 
             main_client.getBalance({owner:recipient}).then((balance) => {
                 console.log('main Balance:', balance);
-                set_mainnet_balance(Number(balance.totalBalance)/1e9);
+                let m = Number(balance.totalBalance);
+                set_mainnet_balance(m / 1e9);
+                if(m < faucet_config.mainnet_balance_limit){
+                  setMsg(address_msg);
+                }
+
             });    
             update_recipient_test();
         }
-        else if(mainnet_balance != 0){
+        else{ 
+          
+          if(mainnet_balance != 0){
             set_mainnet_balance(0);
-        }
+          }
+          setMsg('address format invalid!');
+      }
 
       },[recipient])
 
@@ -178,7 +189,7 @@ const FaucetPage = ( props : {update_history : ()=>void }) => {
         <TextField.Root id="address" variant="surface" value={recipient || ''}  onChange={(e)=>{
           let addr = e.target.value
           if(addr.length == 0){
-            setMsg('Input an address with a balance of at least 0.1 SUI on the mainnet');
+            setMsg(default_msg);
           } else{
             setMsg('');
           }
@@ -194,7 +205,8 @@ const FaucetPage = ( props : {update_history : ()=>void }) => {
         >
           Request Faucet
         </Button>
-        {msg && <label  className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{msg}</label>}
+        
+        {msg && <label  className="block mb-2 text-xl font-medium text-gray-900 dark:text-white">{msg}</label>}
       </div>
     </Flex>
 
