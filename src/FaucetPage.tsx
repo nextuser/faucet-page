@@ -3,7 +3,7 @@ import { SuiClient, getFullnodeUrl  } from '@mysten/sui/client';
 import { faucet_config } from '../common/config';
 import { FaucetResult } from '../common/type';
 import { Theme, Button,TextField,Box,Flex } from "@radix-ui/themes";
-import { setFlagsFromString } from 'v8';
+//import { setFlagsFromString } from 'v8';
 
 const FAUCET=faucet_config.faucet_address
 const address_msg = `Input an address with a balance of at least ${faucet_config.mainnet_balance_limit/1e9} SUI on the mainnet`
