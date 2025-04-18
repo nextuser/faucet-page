@@ -2,8 +2,8 @@ import {useState,useEffect} from 'react'
 import { SuiClient, getFullnodeUrl  } from '@mysten/sui/client';
 import { faucet_config } from '../common/config';
 import { FaucetResult } from '../common/type';
-import { Theme, Button,TextField,Box,Flex } from "@radix-ui/themes";
 import { Trash2 } from 'lucide-react';
+import { Theme, Button,TextField,Box,Flex } from "@radix-ui/themes";
 
 const FAUCET=faucet_config.faucet_address
 const address_msg = `Input an address with a balance of at least ${faucet_config.mainnet_balance_limit/1e9} SUI on the mainnet`
@@ -162,9 +162,7 @@ const FaucetPage = ( props : {update_history : ()=>void }) => {
    
     return <>
  
- <Flex direction="column" gap="2" maxWidth="800px">
-      <h1 className="text-2xl font-bold mb-4">Faucet@Sui_network</h1>
-
+ <Flex direction="column" gap="2" maxWidth="w-full">
      
       <div>
            
@@ -195,14 +193,14 @@ const FaucetPage = ( props : {update_history : ()=>void }) => {
           setRecipient(addr)
         }} placeholder="0xaf83..."/>  
         { recipient && <div className="absolute top-2 right-2 flex space-x-2">
-            <button onClick={handleClearInput} className="text-gray-500 hover:text-gray-700">
+            <button onClick={handleClearInput} className="text-gray-500 hover:text-gray-700 ">
               <Trash2 size={20} />
             </button>
         </div>}
         </div>
       </div>
 
-      <div>
+      <div >
         <Button id="request_faucet"
           onClick={handleRequestFaucet}
           className="cursor-pointer w-full disabled:cursor-not-allowed"
@@ -210,12 +208,9 @@ const FaucetPage = ( props : {update_history : ()=>void }) => {
         >
           Request Faucet
         </Button>
-        
         {msg && <label  className="block mb-2 text-xl font-medium text-gray-900 dark:text-white">{msg}</label>}
       </div>
     </Flex>
-
-
     </>
 }
 

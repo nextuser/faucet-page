@@ -20,7 +20,7 @@ const formatAddress = (address: string): string => {
 const getRecipient = (tx :SuiTransactionBlockResponse) => {
     if(tx.effects && tx.effects.created && tx.effects.created.length == 1 ){
         let obj = tx.effects?.created!.at(0);
-        console.log("crated objeect is ", obj);
+        //console.log("created objeect is ", obj);
         let addr = (obj as unknown as {owner: {AddressOwner : string} } ).owner.AddressOwner;
         
         return addr;
@@ -54,20 +54,20 @@ return (
         let balanceChange :number | undefined ;
         let change_owner = "";
         if(tx.balanceChanges ){
-            console.log("balance changes ", tx.balanceChanges);
+            //console.log("balance changes ", tx.balanceChanges);
             for(let bc of tx.balanceChanges){
                 change_owner = (bc.owner as unknown as { AddressOwner: string}).AddressOwner;
-                console.log("change owner", change_owner);
+                //console.log("change owner", change_owner);
                 if(change_owner != faucet_config.faucet_address  ){
                     balanceChange = Number(bc.amount) / 1e9;
                     //change_owner = (bc.owner as unknown as { AddressOwner: string;}).AddressOwner
                     recipient = change_owner;
-                    console.log(`balance change ${balanceChange} for ${change_owner}`);
+                    //console.log(`balance change ${balanceChange} for ${change_owner}`);
                     break;
                 }
             }
         } else{
-            console.log("no balance change for ", tx.effects);
+           // console.log("no balance change for ", tx.effects);
         }
         return (<div key={tx.digest}
             className="  rounded-xl border border-zinc-200 bg-white text-zinc-950 shadow dark:border-zinc-800 dark:text-zinc-50 overflow-hidden transition-all hover:shadow-md mb-2 dark:bg-gray-800">

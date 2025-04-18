@@ -59,10 +59,10 @@ function GithubPage( props : { update_history : ()=>void }) {
         localStorage.setItem("githubAuth",data.token!)
         localStorage.setItem("githubExpired", String(new Date().getUTCMilliseconds() + config.time_expired));
         setGitToken(data.token);
-        console.log("right profile data",data.userData);
+        console.log("authByCode:right profile data",data.userData);
         return;
       } else if(data.error_description){
-        console.log("data error:",data.error_description);
+        console.log("authByCode:data error:",data.error_description);
         setMsg(data.error_description);
       }
       
