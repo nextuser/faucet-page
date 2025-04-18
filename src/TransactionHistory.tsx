@@ -19,9 +19,10 @@ const formatAddress = (address: string): string => {
 
 const getRecipient = (tx :SuiTransactionBlockResponse) => {
     if(tx.effects && tx.effects.created && tx.effects.created.length == 1 ){
-        let owner = tx.effects?.created!.at(0);
-        console.log("recipent owner is ", owner);
-        let addr = (owner as unknown as {owner: {AddressOwner : string} } ).owner.AddressOwner;
+        let obj = tx.effects?.created!.at(0);
+        console.log("crated objeect is ", obj);
+        let addr = (obj as unknown as {owner: {AddressOwner : string} } ).owner.AddressOwner;
+        
         return addr;
     }
     return "";
@@ -35,6 +36,7 @@ const  TransactionHistory = (props:{ transactions:SuiTransactionBlockResponse[]}
 console.log('arr:',props.transactions);
 console.log("faucet config",faucet_config);
 
+
 return (
 <>
     <br/>
@@ -45,7 +47,7 @@ return (
         props.transactions.map((tx:SuiTransactionBlockResponse)=>{
         let recipient = getRecipient(tx);
         let short_recipient = formatAddress(recipient)
-        let balanceChange = 1;
+        let balanceChange :number | undefined ;
         let change_owner = "";
         if(tx.balanceChanges ){
             console.log("balance changes ", tx.balanceChanges);
@@ -89,10 +91,17 @@ return (
             </div>
             <div className="p-6 py-2 ">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
-                    <div>
-                        <p className="font-medium text-gray-500 dark:text-gray-400">Amount</p>
-                        <p className="font-semibold text-gray-900 dark:text-gray-100">{balanceChange} SUI</p>
+                    {balanceChange &&<div>
+                        <p className="font-medium text-gray-500 dark:text-gray-400"> Amount </p>
+                        <p className="font-semibold text-gray-900 dark:text-gray-100">${balanceChange}  SUI</p>
                     </div>
+                    }
+                    {
+                        !balanceChange && <div>
+                        <p className="font-medium text-gray-500 dark:text-gray-400"> Sender </p>
+                        <p className="font-semibold text-gray-900 dark:text-gray-100">{formatAddress(faucet_config.faucet_address)}</p>
+                    </div>
+                    }
                     <div>
                         <p className="font-medium text-gray-500 dark:text-gray-400">Recipient</p>
                         <CopyButton display={short_recipient} copy_value={recipient}></CopyButton>
