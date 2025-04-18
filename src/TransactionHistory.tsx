@@ -45,6 +45,10 @@ return (
     <div className='div_600'>
     {
         props.transactions.map((tx:SuiTransactionBlockResponse)=>{
+
+        let isSucc = tx.effects!.status.status == 'success';
+        let succClass = isSucc ?  'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100'
+                             : 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100' ;
         let recipient = getRecipient(tx);
         let short_recipient = formatAddress(recipient)
         let balanceChange :number | undefined ;
@@ -72,7 +76,7 @@ return (
                 className=" flex flex-col space-y-1.5 p-6 py-3 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-700 border-b dark:border-gray-700">
                 <div className="flex items-center justify-between">
                     <div className="tracking-tight text-base font-medium text-gray-900 dark:text-gray-100">Transaction</div><span
-                        className="px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100">{tx.effects!.status.status}</span>
+                        className={`px-2 py-0.5 text-xs font-medium rounded-full  ${succClass}`}>{tx.effects!.status.status}</span>
                 </div>
                 <div className="flex justify-between items-center mt-1">
                     <div className="font-mono text-xs text-gray-500 dark:text-gray-400 truncate max-w-[40%]">
@@ -99,7 +103,8 @@ return (
                     {
                         !balanceChange && <div>
                         <p className="font-medium text-gray-500 dark:text-gray-400"> Sender </p>
-                        <p className="font-semibold text-gray-900 dark:text-gray-100">{formatAddress(faucet_config.faucet_address)}</p>
+                        <p className="font-semibold text-gray-900 dark:text-gray-100">
+                        <CopyButton display={formatAddress(faucet_config.faucet_address)} copy_value={faucet_config.faucet_address}></CopyButton></p>
                     </div>
                     }
                     <div>
