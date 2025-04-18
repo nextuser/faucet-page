@@ -3,12 +3,11 @@ import { SuiClient, getFullnodeUrl  } from '@mysten/sui/client';
 import { faucet_config } from '../common/config';
 import { FaucetResult } from '../common/type';
 import { Theme, Button,TextField,Box,Flex } from "@radix-ui/themes";
-//import { setFlagsFromString } from 'v8';
+import { Trash2 } from 'lucide-react';
 
 const FAUCET=faucet_config.faucet_address
 const address_msg = `Input an address with a balance of at least ${faucet_config.mainnet_balance_limit/1e9} SUI on the mainnet`
 
-console.log("faucet:",faucet_config);
 function isAddrValid(str : string):boolean{
     if(str && str.length == 66 && str.startsWith('0x')){
         return true;
@@ -17,8 +16,8 @@ function isAddrValid(str : string):boolean{
     return false;   
 }
 
-let test_client = new SuiClient({url:getFullnodeUrl('testnet')});
-let main_client = new SuiClient({url:getFullnodeUrl('mainnet')});
+const test_client = new SuiClient({url:getFullnodeUrl('testnet')});
+const main_client = new SuiClient({url:getFullnodeUrl('mainnet')});
 interface ReqData  {  
     FixedAmountRequest: {
         recipient: string
@@ -29,16 +28,16 @@ const sui_limit_mainnet = faucet_config.mainnet_balance_limit/1e9;
 const default_msg = `Welcome : faucet ${faucet_config.faucet_amount/1e9} SUI  testnet once a day, when you have at lease ${sui_limit_mainnet} SUI in mainnet`;
 const FaucetPage = ( props : {update_history : ()=>void }) => {
     const [loading, setLoading] = useState(false);
-    let [ msg , setMsg ] = useState(''); 
-    let [recipient , setRecipient] = useState<string>('')
+    const [ msg , setMsg ] = useState(''); 
+    const [recipient , setRecipient] = useState<string>('')
 
-    let [mainnet_balance , set_mainnet_balance] = useState<number>(0)
-    let [testnet_balance , set_testnet_balance] = useState<number>(0)
+    const [mainnet_balance , set_mainnet_balance] = useState<number>(0)
+    const [testnet_balance , set_testnet_balance] = useState<number>(0)
 
-    let [total_balance ,set_total_balance] = useState<number>(0);
+    const [total_balance ,set_total_balance] = useState<number>(0);
 
-    let [faucet_enable , set_faucet_enable ] = useState(false)
-    let update_total =  ()=>{
+    const [faucet_enable , set_faucet_enable ] = useState(false)
+    const update_total =  ()=>{
       setLoading(true)
       test_client.getBalance({owner:FAUCET}).then((balance) => {
         console.log('Balance:', balance);
@@ -47,31 +46,28 @@ const FaucetPage = ( props : {update_history : ()=>void }) => {
       });
     }
 
+    const handleClearInput = ()=>{
+      setRecipient('');
+    }
+
     let update_recipient_test =  ()=>{
         test_client.getBalance({owner:recipient}).then((balance) => {
         console.log('Balance:', balance);
         set_testnet_balance(Number(balance.totalBalance)/1e9);
       });
     }
-    const redirect_faucet = ( e )=>{
-      const url = `https://faucet-rpc.vercel.app/v1/gas?recipient=${recipient}`
-      window.location.href=url;
-    }
-    let redirect = false;
+
     const handleRequestFaucet = async (e: React.FormEvent) => {
         e.preventDefault();
-        if(redirect){
-          redirect_faucet(e);
-          return;
-        }
+
         set_faucet_enable(false);
-        let formData :ReqData ={
+        const formData :ReqData ={
             FixedAmountRequest:{
                 recipient:""
             }
         }
         formData.FixedAmountRequest.recipient = recipient;
-        let url =`${faucet_config.rpc_url}?recipient=${recipient}`;
+        const url =`${faucet_config.rpc_url}?recipient=${recipient}`;
         console.log(url);
         try {
           const res = await fetch(url, {
@@ -116,9 +112,7 @@ const FaucetPage = ( props : {update_history : ()=>void }) => {
       }
         let enable = total_balance >  (faucet_config.faucet_amount + faucet_config.gas_budget)/1e9;
         if(enable){
-          
-          enable = mainnet_balance >= sui_limit_mainnet;
-          console.log(`mainnet_balance=${mainnet_balance} sui_limit_mainnet=${sui_limit_mainnet}`);
+          enable = mainnet_balance >= faucet_config.mainnet_balance_limit/1e9
           if(!enable){
             setMsg(`this address has no enough balance in mainnet . you need at least ${faucet_config.mainnet_balance_limit/1e9} SUI @mainnet`);
           }
@@ -143,7 +137,7 @@ const FaucetPage = ( props : {update_history : ()=>void }) => {
         if(isAddrValid(recipient)){ 
             main_client.getBalance({owner:recipient}).then((balance) => {
                 console.log('main Balance:', balance);
-                let m = Number(balance.totalBalance);
+                const m = Number(balance.totalBalance);
                 set_mainnet_balance(m / 1e9);
                 if(m < faucet_config.mainnet_balance_limit){
                   setMsg(address_msg);
@@ -190,15 +184,22 @@ const FaucetPage = ( props : {update_history : ()=>void }) => {
       </div>
       <div>
         <label htmlFor='address'>Sui address</label>
+        <div className='inline-block w-full relative'>
         <TextField.Root id="address" variant="surface" value={recipient || ''}  onChange={(e)=>{
-          let addr = e.target.value
+          const addr = e.target.value
           if(addr.length == 0){
             setMsg(default_msg);
           } else{
             setMsg('');
           }
           setRecipient(addr)
-        }} placeholder="0xaf83..."/>       
+        }} placeholder="0xaf83..."/>  
+        { recipient && <div className="absolute top-2 right-2 flex space-x-2">
+            <button onClick={handleClearInput} className="text-gray-500 hover:text-gray-700">
+              <Trash2 size={20} />
+            </button>
+        </div>}
+        </div>
       </div>
 
       <div>

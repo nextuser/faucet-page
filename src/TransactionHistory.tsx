@@ -81,7 +81,7 @@ return (
                 <div className="flex justify-between items-center mt-1">
                     <div className="font-mono text-xs text-gray-500 dark:text-gray-400 truncate max-w-[40%]">
                         {tx.digest}</div>
-                    <div className="flex space-x-2"><CopyButton display="Copy ID" copy_value={tx.digest}></CopyButton>
+                    <div className="flex space-x-2"><CopyButton display="Copy ID" copy_value={tx.digest}  size={20} fontSize={12}></CopyButton>
                             <button onClick={(e)=>viewTransaction(tx.digest)}
                             className="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 dark:focus-visible:ring-zinc-300 border border-zinc-200 bg-white shadow-sm hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-800 rounded-md text-xs text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-gray-100 transition-colors h-7 px-2"><svg
                                 xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
@@ -97,19 +97,21 @@ return (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
                     {balanceChange &&<div>
                         <p className="font-medium text-gray-500 dark:text-gray-400"> Amount </p>
-                        <p className="font-semibold text-gray-900 dark:text-gray-100">${balanceChange}  SUI</p>
+                        <p className="font-semibold text-gray-900 dark:text-gray-100">{balanceChange}  SUI</p>
                     </div>
                     }
                     {
                         !balanceChange && <div>
                         <p className="font-medium text-gray-500 dark:text-gray-400"> Sender </p>
-                        <p className="font-semibold text-gray-900 dark:text-gray-100">
-                        <CopyButton display={formatAddress(faucet_config.faucet_address)} copy_value={faucet_config.faucet_address}></CopyButton></p>
+                        
+                        <CopyButton display={formatAddress(faucet_config.faucet_address)} size={20} fontSize={12} copy_value={faucet_config.faucet_address}>
+                            
+                        </CopyButton>
                     </div>
                     }
                     <div>
                         <p className="font-medium text-gray-500 dark:text-gray-400">Recipient</p>
-                        <CopyButton display={short_recipient} copy_value={recipient}></CopyButton>
+                        <CopyButton display={short_recipient} copy_value={recipient}  size={20} fontSize={12}></CopyButton>
                     </div>
                     <div>
                         <p className="font-medium text-gray-500 dark:text-gray-400">Time</p>

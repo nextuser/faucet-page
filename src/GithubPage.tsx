@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import "@radix-ui/themes/styles.css";
 import { Theme, Button,TextField,Box,Flex } from "@radix-ui/themes";
 import { FaucetResult } from 'common/type';
+import {  Trash2 } from "lucide-react";
 //TODO upload 的时候替换 github_config_local =》 github_config
 import {github_config_faucet as config}  from './site_config'
 type UserType = {
@@ -47,26 +48,27 @@ function GithubPage( props : { update_history : ()=>void }) {
   const [userData,setUserData] = useState<UserType>()
 
 //  成功 code=>token  ,失败 code =>init
-  const queryCode = async (code :string) =>{
+  const authByCode = async (code :string) =>{
     setLoading(true) // Loading is true while our app is fetching
-    let ret = await fetch(`/api/auth?code=${code}`)
+    const ret = await fetch(`/api/auth?code=${code}`)
     try{
-      let ret_json = await ret.json();
+      const ret_json = await ret.json();
       console.log("/api/auth result:",ret_json);
-      let data = ret_json as ProfileData
-      if( data.ok && data.token && data.userData?.login) {
+      const data = ret_json as ProfileData
+      if( data.ok && data.token && data.token.length> 0  && data.userData?.login) {
         localStorage.setItem("githubAuth",data.token!)
         localStorage.setItem("githubExpired", String(new Date().getUTCMilliseconds() + config.time_expired));
         setGitToken(data.token);
         console.log("right profile data",data.userData);
         return;
       } else if(data.error_description){
+        console.log("data error:",data.error_description);
         setMsg(data.error_description);
       }
       
     }
     catch(ex){
-      console.log('error',ex);
+      console.log('catch ex:',ex);
     }
     finally{
       setLoading(false)
@@ -79,16 +81,19 @@ function GithubPage( props : { update_history : ()=>void }) {
     const time = Number(localStorage.getItem('githubExpired'));
     if( time > new Date().getUTCMilliseconds()){
       token = localStorage.getItem('githubAuth')
+    } else{
+      console.log("github expired");
     }
     
-    let ignore = false;
+    const ignore = false;
 
-    if (token != null) {
+    if (token != null && token.length > 0) {
       setLoading(false)
       setGitToken(token)
     } 
     else if (code) {
-        queryCode(code).then(()=>setLoading(false));
+        console.log("auth by Code: code=",code);
+        authByCode(code).then(()=>setLoading(false));
     }
   }, [])
 
@@ -110,7 +115,7 @@ function GithubPage( props : { update_history : ()=>void }) {
 
   function requestFaucet(token:string){
     setLoading(true) // Loading is true while our app is fetching
-    let reqUrl = `/faucet/github?address=${encodeURI(address)}&token=${encodeURI(token)}`
+    const reqUrl = `/faucet/github?address=${encodeURI(address)}&token=${encodeURI(token)}`
     console.log(`url =`,reqUrl);
     fetch(reqUrl, {
       method: 'GET',
@@ -140,11 +145,15 @@ function GithubPage( props : { update_history : ()=>void }) {
  
 
   // Creating object to hold information for 'RESET' Button component
-  let resetBtn = {
+  const resetBtn = {
     label: "Unlink GitHub",
     handleClick: () => oAuthReset,
     extraClass: "bg-red-500 active:bg-red-800 hover:ring-red-400 focus:ring-red-400 ms-3",
   }
+
+  const handleClearInput = () => {
+    setAddress('');
+  };
 
 
   //正在登录场景
@@ -156,7 +165,16 @@ function GithubPage( props : { update_history : ()=>void }) {
     return <>
     	<Flex direction="column" gap="2" maxWidth="800px">
 	      <label htmlFor='address'>Sui address</label>
+        <div className='relative inline-block'>
         <TextField.Root id="address" variant="surface" value={address} onChange={(e)=>setAddress(e.target.value)} placeholder="0xafed3..." />
+        <div className="absolute top-2 right-2 flex space-x-2">
+            
+           {address && <button onClick={handleClearInput} className="text-gray-500 hover:text-gray-700">
+              <Trash2 size={20} />
+            </button>
+          }
+        </div>
+        </div>
         <Button className="cursor-pointer disabled:cursor-not-allowed" onClick={()=>requestFaucet(gitToken)} disabled={ gitToken == "" || address === "" } >Reques Faucet</Button>
         <Button className="cursor-pointer" onClick={oAuthReset}>Unlink GitHub</Button>
         {msg && <label>{msg}</label>}

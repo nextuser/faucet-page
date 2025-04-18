@@ -4,6 +4,7 @@ import FaucetPage from './FaucetPage'
 import GithubPage from "./GithubPage";
 import './App.css'
 import './style.css'
+import './global.css'
 import "@radix-ui/themes/styles.css";
 import TransactionHistory from './TransactionHistory'
 import { Box, Flex , Grid} from "@radix-ui/themes";
