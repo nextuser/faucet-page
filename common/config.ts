@@ -1,5 +1,5 @@
 export const faucet_config={
-    mainnet_balance_limit : 1e9,
+    mainnet_balance_limit : 1e9, 
     faucet_amount : 1e8,
     gas_budget: 3e8,
     faucet_address : '0x16781b5507cafe0150fe3265357cccd96ff0e9e22e8ef9373edd5e3b4a808884',

@@ -8,6 +8,7 @@ import { Theme, Button,TextField,Box,Flex } from "@radix-ui/themes";
 const FAUCET=faucet_config.faucet_address
 const address_msg = `Input an address with a balance of at least ${faucet_config.mainnet_balance_limit/1e9} SUI on the mainnet`
 
+console.log("faucet:",faucet_config);
 function isAddrValid(str : string):boolean{
     if(str && str.length == 66 && str.startsWith('0x')){
         return true;
@@ -24,7 +25,8 @@ interface ReqData  {
     }
   };
 
-const default_msg = `Welcome : faucet ${faucet_config.faucet_amount/1e9} SUI  testnet once a day, when you have at lease ${faucet_config.mainnet_balance_limit/1e9} SUI in mainnet`;
+const sui_limit_mainnet = faucet_config.mainnet_balance_limit/1e9;
+const default_msg = `Welcome : faucet ${faucet_config.faucet_amount/1e9} SUI  testnet once a day, when you have at lease ${sui_limit_mainnet} SUI in mainnet`;
 const FaucetPage = ( props : {update_history : ()=>void }) => {
     const [loading, setLoading] = useState(false);
     let [ msg , setMsg ] = useState(''); 
@@ -114,7 +116,9 @@ const FaucetPage = ( props : {update_history : ()=>void }) => {
       }
         let enable = total_balance >  (faucet_config.faucet_amount + faucet_config.gas_budget)/1e9;
         if(enable){
-          enable = mainnet_balance >= faucet_config.mainnet_balance_limit/1e9
+          
+          enable = mainnet_balance >= sui_limit_mainnet;
+          console.log(`mainnet_balance=${mainnet_balance} sui_limit_mainnet=${sui_limit_mainnet}`);
           if(!enable){
             setMsg(`this address has no enough balance in mainnet . you need at least ${faucet_config.mainnet_balance_limit/1e9} SUI @mainnet`);
           }

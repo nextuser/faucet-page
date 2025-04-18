@@ -33,6 +33,7 @@ const viewTransaction = (txId: string) => {
 
 const  TransactionHistory = (props:{ transactions:SuiTransactionBlockResponse[]})=>{
 console.log('arr:',props.transactions);
+console.log("faucet config",faucet_config);
 
 return (
 <>
@@ -44,7 +45,25 @@ return (
         props.transactions.map((tx:SuiTransactionBlockResponse)=>{
         let recipient = getRecipient(tx);
         let short_recipient = formatAddress(recipient)
-        return (<div 
+        let balanceChange = 1;
+        let change_owner = "";
+        if(tx.balanceChanges ){
+            console.log("balance changes ", tx.balanceChanges);
+            for(let bc of tx.balanceChanges){
+                change_owner = (bc.owner as unknown as { AddressOwner: string}).AddressOwner;
+                console.log("change owner", change_owner);
+                if(change_owner != faucet_config.faucet_address  ){
+                    balanceChange = Number(bc.amount) / 1e9;
+                    //change_owner = (bc.owner as unknown as { AddressOwner: string;}).AddressOwner
+                    recipient = change_owner;
+                    console.log(`balance change ${balanceChange} for ${change_owner}`);
+                    break;
+                }
+            }
+        } else{
+            console.log("no balance change for ", tx.effects);
+        }
+        return (<div key={tx.digest}
             className="  rounded-xl border border-zinc-200 bg-white text-zinc-950 shadow dark:border-zinc-800 dark:text-zinc-50 overflow-hidden transition-all hover:shadow-md mb-2 dark:bg-gray-800">
         
             <div
@@ -60,7 +79,7 @@ return (
                             <button onClick={(e)=>viewTransaction(tx.digest)}
                             className="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 dark:focus-visible:ring-zinc-300 border border-zinc-200 bg-white shadow-sm hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-800 rounded-md text-xs text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-gray-100 transition-colors h-7 px-2"><svg
                                 xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
                                 className="lucide lucide-external-link h-3 sm:mr-1 mr-0">
                                 <path d="M15 3h6v6"></path>
                                 <path d="M10 14 21 3"></path>
@@ -72,7 +91,7 @@ return (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
                     <div>
                         <p className="font-medium text-gray-500 dark:text-gray-400">Amount</p>
-                        <p className="font-semibold text-gray-900 dark:text-gray-100">1.000000 SUI</p>
+                        <p className="font-semibold text-gray-900 dark:text-gray-100">{balanceChange} SUI</p>
                     </div>
                     <div>
                         <p className="font-medium text-gray-500 dark:text-gray-400">Recipient</p>

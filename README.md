@@ -1,7 +1,7 @@
 # Faucet RPC Service
 A website for requesting testnet faucet funds.
 - Supports GitHub login and provides 1 SUI on testnet per GitHub account daily
-- Provides 1 SUI on testnet daily for accounts holding at least 0.1 SUI on mainnet
+- Provides 0.1 SUI on testnet daily for accounts holding at least 1 SUI on mainnet
 
 ## Prerequisites
 
